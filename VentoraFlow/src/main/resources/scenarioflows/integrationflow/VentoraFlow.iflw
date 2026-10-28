@@ -129,7 +129,7 @@
                 </ifl:property>
                 <ifl:property>
                     <key>xsrfProtection</key>
-                    <value>1</value>
+                    <value>0</value>
                 </ifl:property>
                 <ifl:property>
                     <key>TransportProtocol</key>
@@ -217,7 +217,7 @@
                 </ifl:property>
                 <ifl:property>
                     <key>script</key>
-                    <value>VentoraSigner.groovy</value>
+                    <value>VentoraSigner03.groovy</value>
                 </ifl:property>
             </bpmn2:extensionElements>
             <bpmn2:incoming>SequenceFlow_15</bpmn2:incoming>
@@ -285,7 +285,7 @@
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>privateKeyAlias</key>
-                    <value>{e21561e2-04d4-419d-b98a-d1c25309c2f2}</value>
+                    <value>ventoraposdigicert</value>
                 </ifl:property>
                 <ifl:property>
                     <key>componentVersion</key>
