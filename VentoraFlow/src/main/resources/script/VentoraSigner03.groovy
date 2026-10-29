@@ -19,28 +19,21 @@ def Message processData(Message message) {
     // Public Key
     KeystoreService keystoreService = ITApiFactory.getService(KeystoreService.class, null) // fetch the public key from the CPI keystore
     KeyPair keyPair  = keystoreService.getKeyPair("ventoraposdigicert"); 
-	PublicKey publicKey = keyPair.getPublic();
-	//PrivateKey pvtKey = keyPair.getPrivate();
+	//PublicKey publicKey = keyPair.getPublic();
+	PrivateKey pvtKey = keyPair.getPrivate();
     // Signature
-    def signature = message.getHeaders().get("SAPSimpleSignatureValue"); // read base64-encoded signature from header
-    byte[] signatureAsBytes = Base64.getDecoder().decode(signature);  // decode base64
+    //def signature = message.getHeaders().get("SAPSimpleSignatureValue"); // read base64-encoded signature from header
+    //byte[] signatureAsBytes = Base64.getDecoder().decode(signature);  // decode base64
 
     // Verify 
 	Signature sig = Signature.getInstance("SHA256withRSA", "SunRsaSign"); // algorithms and the provider. "SunRsaSign" is a built-in provider that supports RSA
-	sig.initVerify(publicKey);
-	//sig.initVerify(pvtKey);
+	//sig.initVerify(publicKey);
+	sig.initSign(pvtKey);
 	sig.update(bodyAsBytes);
-	boolean verificationResult = sig.verify(signatureAsBytes);
+	byte[] signedBody = sig.sign();
 
-    // Handle result	
-    def messageLog = messageLogFactory.getMessageLog(message);
-	messageLog.addAttachmentAsString("VerificationResult", "Verification result:  " + verificationResult, "text/plain");
-	if(! verificationResult) throw new Exception("Verification of Digital Signature failed!")
-
-    if(verificationResult)
-	{
-	def encodedMsg = Base64.getEncoder().encodeToString(signatureAsBytes);
+	def encodedMsg = Base64.getEncoder().encodeToString(signedBody);
 	message.setBody(encodedMsg);
-	}
+
     return message;
 }
