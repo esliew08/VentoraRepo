@@ -1,4 +1,5 @@
 import com.sap.gateway.ip.core.customdev.util.Message;
+import java.util.Base64;
 
 // used for accessing the PrivateKey by alias
 import com.sap.it.api.ITApiFactory;
@@ -15,12 +16,18 @@ def Message processData(Message message) {
     // Content
     def body = message.getBody(java.lang.String) as String;
 	byte[] bodyAsBytes = body.getBytes(); //convert body to byte[] is required for signature verification
-
+    
     // Public Key
     KeystoreService keystoreService = ITApiFactory.getService(KeystoreService.class, null) // fetch the public key from the CPI keystore
     KeyPair keyPair  = keystoreService.getKeyPair("ventoraposdigicert"); 
 	//PublicKey publicKey = keyPair.getPublic();
 	PrivateKey pvtKey = keyPair.getPrivate();
+	
+	byte[] pvtKeyBytes = pvtKey.getEncoded();
+	String pvtBase64 = Base64.getEncoder().encodeToString(pvtKeyBytes);
+	
+	message.setHeader("ventoraPrivateKey", pvtBase64);
+	
     // Signature
     //def signature = message.getHeaders().get("SAPSimpleSignatureValue"); // read base64-encoded signature from header
     //byte[] signatureAsBytes = Base64.getDecoder().decode(signature);  // decode base64
