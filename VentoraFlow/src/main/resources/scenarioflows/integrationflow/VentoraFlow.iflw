@@ -217,7 +217,7 @@
                 </ifl:property>
                 <ifl:property>
                     <key>script</key>
-                    <value>VentoraSigner04.groovy</value>
+                    <value>VentoraSigner05.groovy</value>
                 </ifl:property>
             </bpmn2:extensionElements>
             <bpmn2:incoming>SequenceFlow_15</bpmn2:incoming>
