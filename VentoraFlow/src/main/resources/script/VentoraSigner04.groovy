@@ -1,5 +1,6 @@
 import com.sap.gateway.ip.core.customdev.util.Message;
 import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 
 // used for accessing the PrivateKey by alias
 import com.sap.it.api.ITApiFactory;
@@ -26,7 +27,8 @@ def Message processData(Message message) {
 	message.setHeader("VentoraInvoice", invInput);
 	message.setHeader("VentoraPrivateKey",pvtKey1);
 	
-	byte[] bodyAsBytes = invInput.getBytes()
+	//byte[] bodyAsBytes = invInput.getBytes()
+    def inv01Bytes = Base64.getDecoder().decode(invInput);	
     // Public Key
     //KeystoreService keystoreService = ITApiFactory.getService(KeystoreService.class, null) // fetch the public key from the CPI keystore
     //KeyPair keyPair  = keystoreService.getKeyPair("ventoraposdigicert"); 
@@ -43,20 +45,32 @@ def Message processData(Message message) {
     //def signature = message.getHeaders().get("SAPSimpleSignatureValue"); // read base64-encoded signature from header
     //byte[] signatureAsBytes = Base64.getDecoder().decode(signature);  // decode base64
   // Decode the Base64 string to a byte array
-    def decodedKey = Base64.getDecoder().decode(pvtKey1);
+    //def decodedKey = Base64.getDecoder().decode(pvtKey1);
     // Create the key specification
-    def keySpec = new PKCS8EncodedKeySpec(decodedKey);
+    //def keySpec = new PKCS8EncodedKeySpec(decodedKey);
+    def keySpec = new PKCS8EncodedKeySpec(pvtKeyBytes);
     def kf = KeyFactory.getInstance("RSA"); 
     def pvtKey2 = kf.generatePrivate(keySpec);
     
     // Verify 
-	Signature sig = Signature.getInstance("SHA256withRSA", "SunRsaSign"); // algorithms and the provider. "SunRsaSign" is a built-in provider that supports RSA
+//	Signature sig = Signature.getInstance("SHA256withRSA", "SunRsaSign"); // algorithms and the provider. "SunRsaSign" is a built-in provider that supports RSA
+	Signature sig = Signature.getInstance("SHA256withRSA"); 
 	//sig.initVerify(publicKey);
 	sig.initSign(pvtKey2);
-	sig.update(bodyAsBytes);
+	sig.update(inv01Bytes);
 	byte[] signedBody = sig.sign();
 
-	def encodedMsg = Base64.getEncoder().encodeToString(signedBody);
+   def messageSigned = Base64.getEncoder().encodeToString(signedBody);
+   def messagePvtKey = Base64.getEncoder().encodeToString(pvtKey2.getEncoded());
+    
+    def builder = new groovy.json.JsonBuilder();
+    builder.SignedData {
+      invoice messageSigned   
+      pvtkey messagePvtKey    
+    };
+    
+	//def encodedMsg = Base64.getEncoder().encodeToString(signedBody);
+	def encodedMsg = builder.toPrettyString();
 	message.setBody(encodedMsg);
 
     return message;
